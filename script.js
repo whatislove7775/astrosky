@@ -1,26 +1,69 @@
-document.getElementById('generate-btn').addEventListener('click', () => {
-    const dateStr = document.getElementById('birth-date').value;
-    const timeStr = document.getElementById('birth-time').value;
-
-    if (!dateStr || !timeStr) {
-        alert("Пожалуйста, введите дату и время.");
-        return;
-    }
-
-    document.getElementById('ui-container').style.opacity = '0';
+// 1. Логика интерфейса: Cookie -> Капча -> Форма -> Сцена
+document.getElementById('cookie-btn').addEventListener('click', () => {
+    const wrapper = document.getElementById('content-wrapper');
+    wrapper.innerHTML = '<p style="text-align:center; font-size: 1rem;">Cookie одобрены.<br><br>Ожидайте загрузки (5 сек)...</p>';
+    
+    // Задержка 5 секунд перед появлением капчи
     setTimeout(() => {
-        document.getElementById('ui-container').style.display = 'none';
-        document.getElementById('canvas-container').style.opacity = '1';
-        
-        const timeHash = new Date(`${dateStr}T${timeStr}`).getTime();
-        initScene(timeHash);
-    }, 1000);
+        wrapper.innerHTML = `
+            <p style="text-align:center; font-size: 1rem; line-height: 1.5;">Пожалуйста, подтвердите, что на сайт зашла самая привлекательная турчанка в мире.</p>
+            <div style="font-size: 24px; font-style: italic; letter-spacing: 8px; border: 1px dashed #ffffff; padding: 15px; margin: 15px 0;">ЦЕЛУЮ</div>
+            <div class="input-group">
+                <input type="text" id="captcha-input" placeholder="введите слово с картинки" required>
+            </div>
+            <button id="verify-btn">ПОДТВЕРДИТЬ</button>
+        `;
+
+        document.getElementById('verify-btn').addEventListener('click', () => {
+            const val = document.getElementById('captcha-input').value.trim().toLowerCase();
+            if (val === 'целую') {
+                showMainForm();
+            } else {
+                alert('Ошибка верификации. Попробуйте еще раз.');
+            }
+        });
+    }, 5000);
 });
 
+// Переход к вводу даты рождения
+function showMainForm() {
+    const wrapper = document.getElementById('content-wrapper');
+    wrapper.innerHTML = `
+        <h1>ДАННЫЕ РОЖДЕНИЯ</h1>
+        <div class="input-group">
+            <input type="date" id="birth-date" required>
+        </div>
+        <div class="input-group">
+            <input type="time" id="birth-time" required>
+        </div>
+        <button id="generate-btn">ПОСТРОИТЬ КАРТУ</button>
+    `;
+
+    document.getElementById('generate-btn').addEventListener('click', () => {
+        const dateStr = document.getElementById('birth-date').value;
+        const timeStr = document.getElementById('birth-time').value;
+
+        if (!dateStr || !timeStr) {
+            alert("Пожалуйста, введите дату и время.");
+            return;
+        }
+
+        // Запуск 3D-сцены
+        document.getElementById('ui-container').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('ui-container').style.display = 'none';
+            document.getElementById('canvas-container').style.opacity = '1';
+            
+            const timeHash = new Date(`${dateStr}T${timeStr}`).getTime();
+            initScene(timeHash);
+        }, 1000);
+    });
+}
+
+// 2. Логика 3D-сцены
 function initScene(timeOffset) {
     const container = document.getElementById('canvas-container');
 
-    // Сцена, Камера, Рендерер
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 10, 30);
@@ -30,7 +73,6 @@ function initScene(timeOffset) {
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    // CSS2D Рендерер для текста
     const labelRenderer = new THREE.CSS2DRenderer();
     labelRenderer.setSize(window.innerWidth, window.innerHeight);
     labelRenderer.domElement.style.position = 'absolute';
@@ -51,16 +93,15 @@ function initScene(timeOffset) {
     const earthGroup = new THREE.Group();
     scene.add(earthGroup);
 
-    // --- 1. ЗЕМЛЯ (Черная сфера + контуры материков) ---
+    // Земля (черная сфера, чтобы не просвечивали звезды)
     const earthRadius = 3;
-    // Твердая черная сфера внутри, чтобы звезды не просвечивали сквозь Землю
     const blackSphere = new THREE.Mesh(
         new THREE.SphereGeometry(earthRadius * 0.99, 32, 32),
         new THREE.MeshBasicMaterial({ color: 0x000000 })
     );
     earthGroup.add(blackSphere);
 
-    // Загружаем контуры материков (GeoJSON)
+    // Контуры материков
     const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
     
     fetch('https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json')
@@ -81,7 +122,6 @@ function initScene(timeOffset) {
         coordinates.forEach(coord => {
             const lon = coord[0];
             const lat = coord[1];
-            // Конвертация широты/долготы в 3D координаты
             const phi = (90 - lat) * (Math.PI / 180);
             const theta = (lon + 180) * (Math.PI / 180);
             const x = -(earthRadius * Math.sin(phi) * Math.cos(theta));
@@ -93,26 +133,24 @@ function initScene(timeOffset) {
         earthGroup.add(new THREE.Line(geom, lineMaterial));
     }
 
-    // --- 2. ДОМА (Сектора) и ПОДПИСИ ---
+    // Астрологические дома
     const sectorsGroup = new THREE.Group();
     const sectorRadius = 18;
     const sectorMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
-    
     const romanNumerals = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
 
     for (let i = 0; i < 12; i++) {
         const angle = (i / 12) * Math.PI * 2;
-        
-        // Линия сектора
         const points = [
             new THREE.Vector3(Math.cos(angle) * earthRadius, 0, Math.sin(angle) * earthRadius),
             new THREE.Vector3(Math.cos(angle) * sectorRadius, 0, Math.sin(angle) * sectorRadius)
         ];
+        
+        // Используем THREE.Line для корректного рендера
         const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), sectorMaterial);
         sectorsGroup.add(line);
 
-        // Подпись дома (в середине сектора)
-        const labelAngle = angle + (Math.PI / 12); // Сдвигаем на полсектора
+        const labelAngle = angle + (Math.PI / 12);
         const labelDiv = document.createElement('div');
         labelDiv.className = 'house-label';
         labelDiv.textContent = romanNumerals[i];
@@ -123,8 +161,7 @@ function initScene(timeOffset) {
     }
     skyGroup.add(sectorsGroup);
 
-    // --- 3. ПЛАНЕТЫ (Симуляция) ---
-    // Данные для отображения (симуляция на основе введенного времени)
+    // Планеты
     const planetsData = [
         { name: 'Солнце', symbol: '☉' }, { name: 'Луна', symbol: '☽' },
         { name: 'Меркурий', symbol: '☿' }, { name: 'Венера', symbol: '♀' },
@@ -134,22 +171,19 @@ function initScene(timeOffset) {
     ];
 
     planetsData.forEach((planet, index) => {
-        // Генерируем "псевдослучайный" угол на основе времени рождения, чтобы карта менялась
         const pseudoRandomSeed = (timeOffset + index * 987654) % 10000;
         const angle = (pseudoRandomSeed / 10000) * Math.PI * 2;
-        const distance = 8 + (index % 3) * 2; // Разносим планеты по радиусу, чтобы не слипались
+        const distance = 8 + (index % 3) * 2;
 
         const x = Math.cos(angle) * distance;
         const z = Math.sin(angle) * distance;
 
-        // Маленькая точка для планеты
         const pGeo = new THREE.SphereGeometry(0.15, 8, 8);
         const pMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const pMesh = new THREE.Mesh(pGeo, pMat);
         pMesh.position.set(x, 0, z);
         skyGroup.add(pMesh);
 
-        // HTML метка планеты
         const pDiv = document.createElement('div');
         pDiv.className = 'planet-label';
         pDiv.innerHTML = `<span class="planet-symbol">${planet.symbol}</span>${planet.name}`;
@@ -159,11 +193,10 @@ function initScene(timeOffset) {
         skyGroup.add(pObj);
     });
 
-    // --- 4. ЗВЕЗДЫ И СОЗВЕЗДИЯ ---
+    // Звезды
     const starsCount = 2000;
     const starsPos = [];
     
-    // Генерируем точки звезд
     for(let i = 0; i < starsCount; i++) {
         const r = 30 + Math.random() * 50;
         const theta = 2 * Math.PI * Math.random();
@@ -180,24 +213,24 @@ function initScene(timeOffset) {
     const starMesh = new THREE.Points(starsGeom, new THREE.PointsMaterial({ color: 0xffffff, size: 0.1, opacity: 0.8, transparent: true }));
     skyGroup.add(starMesh);
 
-    // Рисуем линии созвездий (соединяем случайные близкие звезды)
+    // Созвездия (линии)
     const constMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.15 });
     for (let c = 0; c < 25; c++) {
-        // Берем случайную звезду как центр созвездия
         const centerIndex = Math.floor(Math.random() * (starsCount - 5)) * 3;
         const pts = [];
         pts.push(new THREE.Vector3(starsPos[centerIndex], starsPos[centerIndex+1], starsPos[centerIndex+2]));
         
-        // Добавляем к ней 3-4 линии
         for(let lines = 0; lines < 4; lines++) {
             const nextIdx = centerIndex + (lines * 3) + 3;
             pts.push(new THREE.Vector3(starsPos[nextIdx], starsPos[nextIdx+1], starsPos[nextIdx+2]));
         }
-        const cLine = new THREE.LineStrip(new THREE.BufferGeometry().setFromPoints(pts), constMaterial);
+        
+        // Исправлено: THREE.Line вместо THREE.LineStrip
+        const cLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), constMaterial);
         skyGroup.add(cLine);
     }
 
-    // Вращение карты
+    // Вращение
     const offsetRotation = (timeOffset % 1000000) * 0.0001;
     skyGroup.rotation.y = offsetRotation;
 
@@ -211,10 +244,10 @@ function initScene(timeOffset) {
     function animate() {
         requestAnimationFrame(animate);
         controls.update();
-        skyGroup.rotation.y += 0.0001; // Очень медленное вращение
+        skyGroup.rotation.y += 0.0001;
         
         renderer.render(scene, camera);
-        labelRenderer.render(scene, camera); // Рендерим текст
+        labelRenderer.render(scene, camera);
     }
     animate();
 }
