@@ -93,3 +93,28 @@ button:hover {
     transition: opacity 2s ease-in-out;
     z-index: 1;
 }
+/* Стили для 3D-подписей */
+.house-label {
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: none; /* Чтобы мышь проходила сквозь текст при вращении */
+    text-shadow: 0 0 5px #000000;
+}
+
+.planet-label {
+    color: #cccccc;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-shadow: 0 0 5px #000000;
+}
+
+.planet-symbol {
+    font-size: 18px;
+    color: #ffffff;
+}
