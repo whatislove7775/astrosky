@@ -1,0 +1,95 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Courier New', Courier, monospace; /* Строгий технический шрифт */
+    overflow: hidden; /* Убираем скролл, сцена будет на весь экран */
+}
+
+#ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000000;
+    z-index: 10;
+    transition: opacity 1s ease-in-out;
+}
+
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+h1 {
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+    font-weight: normal;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    width: 100%;
+}
+
+input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #ffffff;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 10px 0;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+/* Стилизация иконки календаря/часов в браузерах */
+input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+button {
+    margin-top: 20px;
+    background: transparent;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    padding: 15px 40px;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0; /* Изначально скрыто */
+    transition: opacity 2s ease-in-out;
+    z-index: 1;
+}
