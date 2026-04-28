@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карта Неба | Astro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui-container">
+        <div class="form-wrapper">
+            <h1>ДАННЫЕ РОЖДЕНИЯ</h1>
+            <div class="input-group">
+                <input type="date" id="birth-date" required>
+            </div>
+            <div class="input-group">
+                <input type="time" id="birth-time" required>
+            </div>
+            <button id="generate-btn">ПОСТРОИТЬ КАРТУ</button>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
