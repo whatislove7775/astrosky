@@ -3,19 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Карта Неба | Astro</title>
+    <title>натальная карта</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌑</text></svg>">
 </head>
 <body>
     <div id="ui-container">
-        <div class="form-wrapper" id="content-wrapper">
-            <p style="text-align: center; margin-bottom: 20px; font-size: 1.1rem;">Сайт использует файлы cookie для корректной работы.</p>
-            <button id="cookie-btn">ОДОБРИТЬ COOKIE</button>
+        <div class="form-wrapper">
+            <h1>ДАННЫЕ РОЖДЕНИЯ</h1>
+            <div class="input-group">
+                <input type="date" id="birth-date" required>
+            </div>
+            <div class="input-group">
+                <input type="time" id="birth-time" required>
+            </div>
+            <button id="generate-btn">ПОСТРОИТЬ КАРТУ</button>
         </div>
     </div>
 
     <div id="canvas-container"></div>
+
+    <div id="astro-panel" class="hidden">
+        <button id="edit-btn">← ИЗМЕНИТЬ ДАННЫЕ</button>
+        <h2>АСТРОЛОГИЧЕСКИЙ АНАЛИЗ</h2>
+        <div id="astro-data-list"></div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
